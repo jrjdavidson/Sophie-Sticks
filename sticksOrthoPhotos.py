@@ -42,7 +42,7 @@ def process_folders(root_folder):
                 print(f'Skipping folder {entry.path}, Metashape file already exists.')
     return docs
 
-def process_doc(doc):
+def process_doc(doc:Metashape.Document):
     resolution = 1e-6 # 1 micrometer!
     doc.save()
     file_path = doc.path
@@ -69,8 +69,8 @@ def process_doc(doc):
     doc.save()
 
     chunk.buildDepthMaps()
-    chunk.buildModel(source_data=Metashape.DepthMapsData, resolution=resolution)
-    chunk.buildOrthomosaic()
+    chunk.buildModel(source_data=Metashape.DepthMapsData)
+    chunk.buildOrthomosaic(resolution=resolution)
     doc.save()
 
     try:
