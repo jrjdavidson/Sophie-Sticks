@@ -42,7 +42,7 @@ def process_folders(root_folder):
                 print(f'Skipping folder {entry.path}, Metashape file already exists.')
     return docs
 
-def process_doc(doc):
+def process_doc(doc:Metashape.Document):
     doc.save()
     file_path = doc.path
     name = os.path.splitext(file_path)[0]
@@ -69,11 +69,11 @@ def process_doc(doc):
 
     chunk.buildDepthMaps()
     chunk.buildModel(source_data=Metashape.DepthMapsData)
-    chunk.buildOrthomosaic()
+    chunk.buildOrthomosaic(resolution=1.6e-06)
     doc.save()
 
     try:
-        chunk.exportRaster(path=name + '.tif')
+        chunk.exportRaster(resolution=1.6e-06, path=name + '.tif')
     except Exception as error:
         print(f'An error occured: {error}')
 
