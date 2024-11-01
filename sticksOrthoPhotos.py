@@ -43,7 +43,7 @@ def process_folders(root_folder):
     return docs
 
 def process_doc(doc:Metashape.Document):
-    resolution = 1.6e-6 # 1 micrometer!
+    resolution = 1e-5 # 1 micrometer!
     doc.save()
     file_path = doc.path
     name = os.path.splitext(file_path)[0]
