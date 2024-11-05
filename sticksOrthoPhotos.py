@@ -50,9 +50,14 @@ def process_doc(doc:Metashape.Document):
     chunk = doc.chunks[0]
     chunk.detectMarkers()
     markerLocation={
-        'target 1': Metashape.Vector((0.32,0,0)),
-        'target 2': Metashape.Vector((0.52,0,0)),
-        'target 3': Metashape.Vector((0.718,0,0))
+        'target 1': Metashape.Vector((100,0,0)),
+        'target 2': Metashape.Vector((200,0,0)),
+        'target 3': Metashape.Vector((300,0,0)),
+        'target 4': Metashape.Vector((400,0,0)),
+        'target 5': Metashape.Vector((500,0,0)),
+        'target 6': Metashape.Vector((600,0,0)),
+        'target 7': Metashape.Vector((700,0,0)),
+        'target 8': Metashape.Vector((800,0,0))
     }
     for marker in chunk.markers:
         print(f'Maker label is {marker.label}')
