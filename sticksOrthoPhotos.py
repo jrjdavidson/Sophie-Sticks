@@ -56,7 +56,7 @@ def process_doc(doc:Metashape.Document):
         'target 4': Metashape.Vector((310,0,0)),
         'target 5': Metashape.Vector((410,0,0)),
         'target 6': Metashape.Vector((510,0,0)),
-        ##'target 7': Metashape.Vector((610,0,0))
+        'target 7': Metashape.Vector((610,0,0))
     }
     for marker in chunk.markers:
         print(f'Maker label is {marker.label}')
