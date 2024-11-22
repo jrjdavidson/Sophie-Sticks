@@ -48,16 +48,15 @@ def process_doc(doc:Metashape.Document):
     file_path = doc.path
     name = os.path.splitext(file_path)[0]
     chunk = doc.chunks[0]
-    chunk.detectMarkers()
+    chunk.detectMarkers(tolerance=100)
     markerLocation={
-        'target 1': Metashape.Vector((100,0,0)),
-        'target 2': Metashape.Vector((200,0,0)),
-        'target 3': Metashape.Vector((300,0,0)),
-        'target 4': Metashape.Vector((400,0,0)),
-        'target 5': Metashape.Vector((500,0,0)),
-        'target 6': Metashape.Vector((600,0,0)),
-        'target 7': Metashape.Vector((700,0,0)),
-        'target 8': Metashape.Vector((800,0,0))
+        'target 1': Metashape.Vector((10,0,0)),
+        'target 2': Metashape.Vector((110,0,0)),
+        'target 3': Metashape.Vector((210,0,0)),
+        'target 4': Metashape.Vector((310,0,0)),
+        'target 5': Metashape.Vector((410,0,0)),
+        'target 6': Metashape.Vector((510,0,0)),
+        ##'target 7': Metashape.Vector((610,0,0))
     }
     for marker in chunk.markers:
         print(f'Maker label is {marker.label}')
@@ -75,11 +74,11 @@ def process_doc(doc:Metashape.Document):
 
     chunk.buildDepthMaps()
     chunk.buildModel(source_data=Metashape.DepthMapsData)
-    chunk.buildOrthomosaic(resolution=resolution)
+    chunk.buildOrthomosaic()#(resolution=resolution)
     doc.save()
 
     try:
-        chunk.exportRaster(path=name + '.tif',resolution=resolution)
+        chunk.exportRaster(path=name + '.tif')#,resolution=resolution)
     except Exception as error:
         print(f'An error occured: {error}')
 
@@ -91,6 +90,7 @@ if __name__ == '__main__':
         process_doc(doc)
         # Close the document explicitly
         del doc
+        print("All done.")
           
         
     
