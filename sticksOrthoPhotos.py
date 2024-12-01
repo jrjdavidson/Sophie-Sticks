@@ -52,9 +52,16 @@ def process_doc(doc: Metashape.Document):
     file_path = doc.path
     name = os.path.splitext(file_path)[0]
     chunk = doc.chunks[0]
-    chunk.detectMarkers(tolerance=100)
+    chunk.detectMarkers()
+
+    doc.save()
+    preselectionmode = Metashape.ReferencePreselectionSequential
+    chunk.matchPhotos(reference_preselection=True,
+                      reference_preselection_mode=preselectionmode, guided_matching=True)
+    chunk.alignCameras()
+    doc.save()
     markerLocation = {
-        'target 1': Metashape.Vector((1, 0, 0)),
+        'target 1': Metashape.Vector((0.1, 0, 0)),
         'target 2': Metashape.Vector((1.1, 0, 0)),
         'target 3': Metashape.Vector((2.1, 0, 0)),
         'target 4': Metashape.Vector((3.1, 0, 0)),
@@ -70,11 +77,7 @@ def process_doc(doc: Metashape.Document):
                 print(
                     f'{marker.label} is in markerLocation dictonary and the key and marker label are equal.')
                 marker.reference.location = markerLocation[key]
-
-    doc.save()
-
-    chunk.matchPhotos(guided_matching=True)
-    chunk.alignCameras()
+    chunk.optimizeCameras()
     doc.save()
 
     chunk.buildDepthMaps()
@@ -89,7 +92,7 @@ def process_doc(doc: Metashape.Document):
 
 
 if __name__ == '__main__':
-    root_folder = '\\\\file\\Shared\\SEESPhotoDatabase\\Active Work\\Kamen Engel\\For Sophie Newsham\\Working Files'
+    root_folder = '\\\\file\\Shared\\SEESPhotoDatabase\\Active Work\\Kamen Engel\\For Sophie Newsham\\2. Giles or Jonathan_Metashape Fix'
     docs = process_folders(root_folder)
     for doc in docs:
         print(f'Processing {doc.path}')
