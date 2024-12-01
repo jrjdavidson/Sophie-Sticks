@@ -73,7 +73,7 @@ def process_doc(doc: Metashape.Document):
 
     doc.save()
 
-    chunk.matchPhotos()
+    chunk.matchPhotos(guided_matching=True)
     chunk.alignCameras()
     doc.save()
 
