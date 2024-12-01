@@ -47,7 +47,7 @@ def process_folders(root_folder):
 
 
 def process_doc(doc: Metashape.Document):
-    resolution = 1e-5  # 1 micrometer!
+    resolution = 0  # 0 will set to default value
     doc.save()
     file_path = doc.path
     name = os.path.splitext(file_path)[0]
@@ -79,11 +79,11 @@ def process_doc(doc: Metashape.Document):
 
     chunk.buildDepthMaps()
     chunk.buildModel(source_data=Metashape.DepthMapsData)
-    chunk.buildOrthomosaic()  # (resolution=resolution)
+    chunk.buildOrthomosaic(resolution=resolution)
     doc.save()
 
     try:
-        chunk.exportRaster(path=name + '.tif')  # ,resolution=resolution)
+        chunk.exportRaster(path=name + '.tif', resolution=resolution)
     except Exception as error:
         print(f'An error occured: {error}')
 
