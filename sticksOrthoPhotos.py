@@ -52,12 +52,11 @@ def process_doc(doc: Metashape.Document):
     file_path = doc.path
     name = os.path.splitext(file_path)[0]
     chunk = doc.chunks[0]
-    chunk.detectMarkers()
+    chunk.detectMarkers(tolerance=100)
 
     doc.save()
-    preselectionmode = Metashape.ReferencePreselectionSequential
-    chunk.matchPhotos(reference_preselection=True,
-                      reference_preselection_mode=preselectionmode, guided_matching=True)
+    chunk.matchPhotos(downscale=0, generic_preselection=False,
+                      reference_preselection=False, guided_matching=True)
     chunk.alignCameras()
     doc.save()
     markerLocation = {
@@ -77,6 +76,8 @@ def process_doc(doc: Metashape.Document):
                 print(
                     f'{marker.label} is in markerLocation dictonary and the key and marker label are equal.')
                 marker.reference.location = markerLocation[key]
+                marker.reference.accuracy = Metashape.Vector(
+                    (0.05, 0.05, 0.005))
     chunk.optimizeCameras()
     doc.save()
 
@@ -92,7 +93,7 @@ def process_doc(doc: Metashape.Document):
 
 
 if __name__ == '__main__':
-    root_folder = '\\\\file\\Shared\\SEESPhotoDatabase\\Active Work\\Kamen Engel\\For Sophie Newsham\\2. Giles or Jonathan_Metashape Fix'
+    root_folder = '\\\\file\\Shared\\SEESPhotoDatabase\\Active Work\\Kamen Engel\\For Sophie Newsham\\1. For Sophie to Check'
     docs = process_folders(root_folder)
     for doc in docs:
         print(f'Processing {doc.path}')
