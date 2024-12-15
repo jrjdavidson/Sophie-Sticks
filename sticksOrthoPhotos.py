@@ -55,10 +55,7 @@ def process_doc(doc: Metashape.Document):
     chunk.detectMarkers(tolerance=100)
 
     doc.save()
-    chunk.matchPhotos(downscale=0, generic_preselection=False,
-                      reference_preselection=False, guided_matching=True)
-    chunk.alignCameras()
-    doc.save()
+
     markerLocation = {
         'target 1': Metashape.Vector((0.1, 0, 0)),
         'target 2': Metashape.Vector((1.1, 0, 0)),
@@ -71,16 +68,26 @@ def process_doc(doc: Metashape.Document):
     for marker in chunk.markers:
         print(f'Maker label is {marker.label}')
         for key in markerLocation.keys():
-            print(f'Key is: {key}')
             if marker.label in markerLocation and marker.label == key:
                 print(
-                    f'{marker.label} is in markerLocation dictonary and the key and marker label are equal.')
+                    f'{marker.label} is in markerLocation dictonary.')
                 marker.reference.location = markerLocation[key]
                 marker.reference.accuracy = Metashape.Vector(
-                    (0.05, 0.05, 0.005))
-    chunk.optimizeCameras()
+                    (0.05, 0.05, 0.05))
+    for camera in chunk.cameras:
+        # Set yaw, pitch, and roll to 0
+        camera.reference.rotation = Metashape.Vector([0.0, 0.0, 0.0])
+        # Set accuracy to 0.01 degrees
+        camera.reference.rotation_accuracy = Metashape.Vector(
+            [0.01, 0.01, 0.01])
+
+    # Save the changes
     doc.save()
 
+    chunk.matchPhotos(downscale=0, generic_preselection=False,
+                      reference_preselection=False, guided_matching=True)
+    chunk.alignCameras()
+    doc.save()
     chunk.buildDepthMaps()
     chunk.buildModel(source_data=Metashape.DepthMapsData)
     chunk.buildOrthomosaic(resolution=resolution)
@@ -93,11 +100,10 @@ def process_doc(doc: Metashape.Document):
 
 
 if __name__ == '__main__':
-    root_folder = '\\\\file\\Shared\\SEESPhotoDatabase\\Active Work\\Kamen Engel\\For Sophie Newsham\\1. For Sophie to Check'
+    root_folder = '\\\\file\\Shared\\SEESPhotoDatabase\\Active Work\\Kamen Engel\\For Sophie Newsham\\2. Giles or Jonathan_Metashape Fix'
     docs = process_folders(root_folder)
-    for doc in docs:
+    while docs:  # instead of a "for" loop, pop the doc off the array, to ensure that the docuemnt is closed when done processing. An empty array will evaluate to False.
+        doc = docs.pop(0)  # Pop the first document from the list
         print(f'Processing {doc.path}')
         process_doc(doc)
-        # Close the document explicitly
-        del doc
         print("All done.")
