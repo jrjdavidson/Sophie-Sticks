@@ -36,7 +36,10 @@ def process_folders(root_folder):
                 doc = setUpPhotos(entry.path, psx_path)
                 # Add marker detection and assignment if needed
                 docs.append(doc)
-                # skips setting up folder
+                # Create an empty file to indicate processing status
+                open(f"{entry.path}_PROCESSING.txt",
+                     'w').close()
+
             else:
                 # doc= Metashape.Document()
                 # doc.open(psx_path,read_only=False)
@@ -96,6 +99,7 @@ def process_doc(doc: Metashape.Document):
     # chunk.optimizeCameras()
     if check_camera_rotation(chunk):
         print("Camera rotation exceeds threshold, skipping orthomosaic generation for this chunk. This chunk will have to be checked manually.")
+        update_status_file(doc, 'ROTATION_ERROR')
         return
     chunk.buildModel(source_data=Metashape.TiePointsData)
     pitch = get_average_pitch(chunk)
@@ -109,14 +113,25 @@ def process_doc(doc: Metashape.Document):
     print(f'Chunk rotation: {chunk.transform.matrix}')
     if get_average_pitch(chunk) > 2:
         print("Pitch exceeds threshold, skipping orthomosaic generation for this chunk. This chunk will have to be checked manually.")
+        update_status_file(doc, 'ROTATION_ERROR')
         return
-    # chunk.buildOrthomosaic(resolution=resolution)
+    chunk.buildOrthomosaic(resolution=resolution)
     doc.save()
 
     try:
         chunk.exportRaster(path=name + '.tif', resolution=resolution)
     except Exception as error:
         print(f'An error occured: {error}')
+        update_status_file(doc, 'EXPORTERROR')
+    update_status_file(doc, 'COMPLETE')
+
+
+def update_status_file(doc: Metashape.Document, new_status):
+    doc_path = doc.path
+    # im pretty sure metashape alwasy returns the path with forward slashes.
+    old_status_file_path = f"{doc_path.rpartition('/')[0]}_PROCESSING.txt"
+    new_status_file_path = f"{doc_path.rpartition('/')[0]}_{new_status}.txt"
+    os.rename(old_status_file_path, new_status_file_path)
 
 
 def get_average_pitch(chunk):
@@ -125,14 +140,20 @@ def get_average_pitch(chunk):
     T = chunk.transform.matrix
 
     for camera in chunk.cameras:
+        if camera.center is None:
+            continue
+
         m = chunk.crs.localframe(T.mulp(camera.center))
         R = (m * T * camera.transform *
              Metashape.Matrix().Diag([1, -1, -1, 1])).rotation()
         estimated_ypr = Metashape.utils.mat2ypr(R)
-        if estimated_ypr:
-            pitch = estimated_ypr[1]
-            pitch_sum += pitch
-            count += 1
+
+        if estimated_ypr is None:
+            continue
+
+        pitch = estimated_ypr[1]
+        pitch_sum += pitch
+        count += 1
 
     if count == 0:
         return None
@@ -186,7 +207,7 @@ def check_camera_rotation(chunk: Metashape.Chunk):
 
 
 if __name__ == '__main__':
-    root_folder = '\\\\file\\Shared\\SEESPhotoDatabase\\Active Work\\Kamen Engel\\For Sophie Newsham\\2. Giles or Jonathan_Metashape Fix\\test1'
+    root_folder = '\\\\file\\Shared\\SEESPhotoDatabase\\Active Work\\Kamen Engel\\For Sophie Newsham\\2. Giles or Jonathan_Metashape Fix'
     docs = process_folders(root_folder)
     while docs:  # instead of a "for" loop, pop the doc off the array, to ensure that the docuemnt is closed when done processing. An empty array will evaluate to False.
         doc = docs.pop(0)  # Pop the first document from the list
