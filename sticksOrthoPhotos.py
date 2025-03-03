@@ -50,7 +50,7 @@ def process_folders(root_folder):
     return docs
 
 
-def process_doc(doc: Metashape.Document):
+def process_doc(doc: Metashape.Document, log=True):
     resolution = 5e-6
     doc.save()
     chunk = doc.chunks[0]
@@ -80,7 +80,8 @@ def process_doc(doc: Metashape.Document):
     if placed_markers < 3:
         print(
             f'Not enough markers placed. Only {placed_markers} markers placed. Skipping orthomosaic generation for this chunk. This chunk will have to be checked manually.')
-        update_status_file(doc, 'NOTENOUGHMARKERS')
+        if log:
+            update_status_file(doc, 'NOTENOUGHMARKERS')
         return
 
     for camera in chunk.cameras:
@@ -105,7 +106,8 @@ def process_doc(doc: Metashape.Document):
     # chunk.optimizeCameras()
     if check_camera_rotation(chunk):
         print("Camera rotation exceeds threshold, skipping orthomosaic generation for this chunk. This chunk will have to be checked manually.")
-        update_status_file(doc, 'ROTATION_ERROR')
+        if log:
+            update_status_file(doc, 'ROTATION_ERROR')
         return
     chunk.buildModel(source_data=Metashape.TiePointsData)
 
@@ -114,7 +116,8 @@ def process_doc(doc: Metashape.Document):
     print(f'Chunk rotation: {chunk.transform.matrix}')
     if remove_pitch.get_average_pitch(chunk) > 2:
         print("Pitch exceeds threshold, skipping orthomosaic generation for this chunk. This chunk will have to be checked manually.")
-        update_status_file(doc, 'ROTATION_ERROR')
+        if log:
+            update_status_file(doc, 'ROTATION_ERROR')
         return
     chunk.buildOrthomosaic(resolution=resolution)
     doc.save()
@@ -124,8 +127,10 @@ def process_doc(doc: Metashape.Document):
     #     chunk.exportRaster(path=name + '.tif', resolution=resolution)
     # except Exception as error:
     #     print(f'An error occured: {error}')
-    #     update_status_file(doc, 'EXPORTERROR')
-    update_status_file(doc, 'COMPLETE')
+    #     if log :
+    # update_status_file(doc, 'EXPORTERROR')
+    if log:
+        update_status_file(doc, 'COMPLETE')
 
 
 def normalize_yaw(yaw):

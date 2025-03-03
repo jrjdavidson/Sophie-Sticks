@@ -12,7 +12,7 @@ def stitch_photos():
     doc = Metashape.app.document
     if not len(doc.chunks):
         raise Exception("No chunks!")
-    sticksOrthoPhotos.process_doc(doc)
+    sticksOrthoPhotos.process_doc(doc, False)
 
 
 label = "Scripts/Stitch Photos"
