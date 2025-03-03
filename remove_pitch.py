@@ -36,7 +36,3 @@ def get_average_pitch(chunk):
         return None
 
     return pitch_sum / count
-
-
-chunk = Metashape.app.document.chunk
-remove_average_pitch(chunk)
