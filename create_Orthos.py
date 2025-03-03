@@ -14,8 +14,9 @@ def process_document(doc_path, resolution):
     doc.save()
 
     try:
+        path_name = os.path.splitext(doc.path)[0]
         chunk.exportRaster(
-            path=f"{doc_path.replace('.psx', '')}.tif", resolution=resolution)
+            path=f"{path_name}.tif", resolution=resolution)
     except Exception as error:
         print(f"An error occurred: {error}")
 

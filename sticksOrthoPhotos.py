@@ -1,5 +1,6 @@
 import Metashape
 import os
+import remove_pitch
 
 
 def find_files(folder, types):
@@ -52,8 +53,6 @@ def process_folders(root_folder):
 def process_doc(doc: Metashape.Document):
     resolution = 5e-6
     doc.save()
-    file_path = doc.path
-    name = os.path.splitext(file_path)[0]
     chunk = doc.chunks[0]
     chunk.detectMarkers(tolerance=100)
 
@@ -68,8 +67,8 @@ def process_doc(doc: Metashape.Document):
         'target 6': Metashape.Vector((0.51, 0, 0)),
         'target 7': Metashape.Vector((0.61, 0, 0))
     }
+    placed_markers = 0
     for marker in chunk.markers:
-        print(f'Maker label is {marker.label}')
         for key in markerLocation.keys():
             if marker.label in markerLocation and marker.label == key:
                 print(
@@ -77,12 +76,19 @@ def process_doc(doc: Metashape.Document):
                 marker.reference.location = markerLocation[key]
                 marker.reference.accuracy = Metashape.Vector(
                     (0.00001, 0.00001, 0.00001))
+                placed_markers += 1
+    if placed_markers < 3:
+        print(
+            f'Not enough markers placed. Only {placed_markers} markers placed. Skipping orthomosaic generation for this chunk. This chunk will have to be checked manually.')
+        update_status_file(doc, 'NOTENOUGHMARKERS')
+        return
+
     for camera in chunk.cameras:
         # Set yaw, pitch, and roll to 0
         camera.reference.rotation = Metashape.Vector([0.0, 0.0, 0.0])
         # Set accuracy to 0.01 degrees
         camera.reference.rotation_accuracy = Metashape.Vector(
-            [0.1, 0.1, 0.1])
+            [5, 5, 5])
 
     # Save the changes
     doc.save()
@@ -102,28 +108,33 @@ def process_doc(doc: Metashape.Document):
         update_status_file(doc, 'ROTATION_ERROR')
         return
     chunk.buildModel(source_data=Metashape.TiePointsData)
-    pitch = get_average_pitch(chunk)
-    rotation_matrix = Metashape.Utils.ypr2mat(Metashape.Vector((0, pitch, 0)))
-    inverse_rotation_matrix = rotation_matrix.inv()
-    T = chunk.transform.matrix
-    # Apply the inverse rotation to remove the pitch
-    chunk.transform.matrix = Metashape.Matrix.Rotation(
-        inverse_rotation_matrix) * T
+
+    remove_pitch.remove_average_pitch(chunk)
 
     print(f'Chunk rotation: {chunk.transform.matrix}')
-    if get_average_pitch(chunk) > 2:
+    if remove_pitch.get_average_pitch(chunk) > 2:
         print("Pitch exceeds threshold, skipping orthomosaic generation for this chunk. This chunk will have to be checked manually.")
         update_status_file(doc, 'ROTATION_ERROR')
         return
     chunk.buildOrthomosaic(resolution=resolution)
     doc.save()
 
-    try:
-        chunk.exportRaster(path=name + '.tif', resolution=resolution)
-    except Exception as error:
-        print(f'An error occured: {error}')
-        update_status_file(doc, 'EXPORTERROR')
+    # try:
+    #     name = os.path.splitext(doc.path)[0]
+    #     chunk.exportRaster(path=name + '.tif', resolution=resolution)
+    # except Exception as error:
+    #     print(f'An error occured: {error}')
+    #     update_status_file(doc, 'EXPORTERROR')
     update_status_file(doc, 'COMPLETE')
+
+
+def normalize_yaw(yaw):
+    """Normalize an angle (in this case the yaw) to the range [-180, 180] degrees."""
+    while yaw > 180:
+        yaw -= 360
+    while yaw < -180:
+        yaw += 360
+    return yaw
 
 
 def update_status_file(doc: Metashape.Document, new_status):
@@ -134,33 +145,6 @@ def update_status_file(doc: Metashape.Document, new_status):
     os.rename(old_status_file_path, new_status_file_path)
 
 
-def get_average_pitch(chunk):
-    pitch_sum = 0
-    count = 0
-    T = chunk.transform.matrix
-
-    for camera in chunk.cameras:
-        if camera.center is None:
-            continue
-
-        m = chunk.crs.localframe(T.mulp(camera.center))
-        R = (m * T * camera.transform *
-             Metashape.Matrix().Diag([1, -1, -1, 1])).rotation()
-        estimated_ypr = Metashape.utils.mat2ypr(R)
-
-        if estimated_ypr is None:
-            continue
-
-        pitch = estimated_ypr[1]
-        pitch_sum += pitch
-        count += 1
-
-    if count == 0:
-        return None
-
-    return pitch_sum / count
-
-
 def check_camera_rotation(chunk: Metashape.Chunk):
     threshold = 5  # degrees
     yaw_sum, pitch_sum, roll_sum = 0, 0, 0
@@ -169,12 +153,15 @@ def check_camera_rotation(chunk: Metashape.Chunk):
 
     # Calculate the sum of yaw, pitch, and roll
     for camera in chunk.cameras:
+        if camera.center is None:
+            continue
         m = chunk.crs.localframe(T.mulp(camera.center))
         R = (m * T * camera.transform *
              Metashape.Matrix().Diag([1, -1, -1, 1])).rotation()
         estimated_ypr = Metashape.utils.mat2ypr(R)
         if estimated_ypr:
             yaw, pitch, roll = estimated_ypr
+            yaw = normalize_yaw(yaw)
             yaw_sum += yaw
             pitch_sum += pitch
             roll_sum += roll
@@ -191,12 +178,15 @@ def check_camera_rotation(chunk: Metashape.Chunk):
 
     # Check if each rotation is within the threshold
     for camera in chunk.cameras:
+        if camera.center is None:
+            continue
         m = chunk.crs.localframe(T.mulp(camera.center))
         R = (m * T * camera.transform *
              Metashape.Matrix().Diag([1, -1, -1, 1])).rotation()
         estimated_ypr = Metashape.utils.mat2ypr(R)
         if estimated_ypr:
             yaw, pitch, roll = estimated_ypr
+            yaw = normalize_yaw(yaw)
             if (abs(yaw - yaw_avg) > threshold or
                 abs(pitch - pitch_avg) > threshold or
                     abs(roll - roll_avg) > threshold):
