@@ -1,7 +1,7 @@
 # Metashape Batch Processor (Markers, Orientation QC, Orthomosaics) for Kamen's jig.
 
 ![Kamen's jig](image.png)
-A jig that Kamen Engel put together to help speed up core photography, with the intent of stitching photos to log tree core rings.
+**The photo shows the jig that Kamen Engel put together to help speed up core photography, with the intent of stitching photos of tree cores.**
 - Requires **Agisoft Metashape** (Professional), with Python API available.
 - Designed for flat, linear samples (tree cores) photographed with printed coded targets for scale and orientation.
 
