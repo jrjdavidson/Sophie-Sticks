@@ -1,0 +1,30 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: Sophie-sticks
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Jonathan
+    family-names: Davidson
+    email: jrjdavidson@gmail.com
+    affiliation: University of Canterbury
+    orcid: 'https://orcid.org/0000-0002-7700-9359'
+  - given-names: Kamen
+    family-names: Engel
+    email: kamen.engel@canterbury.ac.nz
+    affiliation: University of Canterbury
+repository-code: 'https://github.com/jrjdavidson/Sophie-Sticks'
+abstract: >-
+  A group of scripts that automates Agisoft Metashape
+  processing for multiple folders of images of tree core
+  rings.
+keywords:
+  - photogrammetry
+  - structure-from-motion
+  - Tree core
+  - Agisoft Metashape
+license: MIT
