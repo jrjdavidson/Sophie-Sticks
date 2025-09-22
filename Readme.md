@@ -50,5 +50,5 @@ A helper module to create orthomosaics from all .psx files in a folder. Used whe
 
 ## metashapeMenu.py
 
-A helper module that add the various functions/module to the Metashape application, under a menu called 'Scripts'. Sometimes it's just easier to use the GUI  ¯\_(ツ)_/¯ 
+A helper module that add the various functions/module to the Metashape application, under a menu called 'Scripts'. Sometimes it's just easier to use the GUI  ¯\\_(ツ)_/¯ 
 
