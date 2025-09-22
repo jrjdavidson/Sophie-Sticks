@@ -1,5 +1,7 @@
 import Metashape
 import sticksOrthoPhotos
+import remove_pitch
+
 # Checking compatibility
 compatible_major_version = "2.2"
 found_major_version = ".".join(Metashape.app.version.split('.')[:2])
@@ -15,6 +17,17 @@ def stitch_photos():
     sticksOrthoPhotos.process_doc(doc, False)
 
 
-label = "Scripts/Stitch Photos"
-Metashape.app.addMenuItem(label, stitch_photos)
-print("To execute this script press {}".format(label))
+def remove_average_pitch():
+    doc = Metashape.app.document
+    if not len(doc.chunks):
+        raise Exception("No chunks!")
+    remove_pitch.remove_average_pitch(doc.chunk)
+
+
+label_stitch = "Scripts/Stitch Photos"
+Metashape.app.addMenuItem(label_stitch, stitch_photos)
+print("To execute this script press {}".format(label_stitch))
+
+label_remove_pitch = "Scripts/Remove Average Pitch"
+Metashape.app.addMenuItem(label_remove_pitch, remove_average_pitch)
+print("To execute this script press {}".format(label_remove_pitch))

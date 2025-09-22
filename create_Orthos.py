@@ -9,16 +9,16 @@ def process_document(doc_path, resolution):
     doc = Metashape.Document()
     doc.open(doc_path)
     chunk = doc.chunk
-
+    chunk.buildModel(source_data=Metashape.TiePointsData)
     chunk.buildOrthomosaic(resolution=resolution)
     doc.save()
 
-    try:
-        path_name = os.path.splitext(doc.path)[0]
-        chunk.exportRaster(
-            path=f"{path_name}.tif", resolution=resolution)
-    except Exception as error:
-        print(f"An error occurred: {error}")
+    # try:
+    #     path_name = os.path.splitext(doc.path)[0]
+    #     chunk.exportRaster(
+    #         path=f"{path_name}.tif", resolution=resolution)
+    # except Exception as error:
+    #     print(f"An error occurred: {error}")
 
 
 def find_and_process_docs(root_folder, resolution):
@@ -30,6 +30,6 @@ def find_and_process_docs(root_folder, resolution):
 
 
 # Example usage
-root_folder = '\\\\file\\Shared\\SEESPhotoDatabase\\Active Work\\Kamen Engel\\For Sophie Newsham\\1. For Sophie to Check\\needs ortho'
+root_folder = '\\\\file\\Shared\\SEESPhotoDatabase\\Active Work\\Kamen Engel\\For Sophie Newsham\\2. Giles or Jonathan_Metashape Fix'
 resolution = 5e-6
 find_and_process_docs(root_folder, resolution)

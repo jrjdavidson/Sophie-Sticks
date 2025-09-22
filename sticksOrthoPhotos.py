@@ -9,10 +9,11 @@ def find_files(folder, types):
 
 def setUpPhotos(image_folder, project_path, types=['JPG']):
     photos = find_files(image_folder, types)
-
+    if len(photos) == 0:
+        print(f'No images found in {image_folder}')
+        return None
     doc = Metashape.Document()
     doc.save(project_path)
-
     chunk = doc.addChunk()
     chunk.addPhotos(photos)
     print(str(len(chunk.cameras)) + " images loaded")
@@ -36,11 +37,14 @@ def process_folders(root_folder):
                 print(f'Processing folder: {entry.path}')
                 doc = setUpPhotos(entry.path, psx_path)
                 # Add marker detection and assignment if needed
-                docs.append(doc)
-                # Create an empty file to indicate processing status
-                open(f"{entry.path}_PROCESSING.txt",
-                     'w').close()
-
+                if doc:
+                    docs.append(doc)
+                    # Create an empty file to indicate processing status
+                    open(f"{entry.path}_PROCESSING.txt",
+                         'w').close()
+                else:
+                    open(f"{entry.path}_NO_IMAGES.txt",
+                         'w').close()
             else:
                 # doc= Metashape.Document()
                 # doc.open(psx_path,read_only=False)
@@ -75,7 +79,7 @@ def process_doc(doc: Metashape.Document, log=True):
                     f'{marker.label} is in markerLocation dictonary.')
                 marker.reference.location = markerLocation[key]
                 marker.reference.accuracy = Metashape.Vector(
-                    (0.00001, 0.00001, 0.00001))
+                    (0.0001, 0.0001, 0.0001))
                 placed_markers += 1
     if placed_markers < 3:
         print(
@@ -202,7 +206,7 @@ def check_camera_rotation(chunk: Metashape.Chunk):
 
 
 if __name__ == '__main__':
-    root_folder = '\\\\file\\Shared\\SEESPhotoDatabase\\Active Work\\Kamen Engel\\For Sophie Newsham\\2. Giles or Jonathan_Metashape Fix'
+    root_folder = r'\\file\Shared\SEESPhotoDatabase\Archive\Kamen Engel\For Sophie Newsham\2. Giles or Jonathan_Metashape Fix'
     docs = process_folders(root_folder)
     while docs:  # instead of a "for" loop, pop the doc off the array, to ensure that the docuemnt is closed when done processing. An empty array will evaluate to False.
         doc = docs.pop(0)  # Pop the first document from the list
